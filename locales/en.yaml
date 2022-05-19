@@ -1,0 +1,24 @@
+errors:
+  age: 'Age should be number between 18 and 100'
+  anonymous: 'First you need to fill the profile'
+  WIP: 'WIP ⚠️'
+welcome:
+  attach_video_note: 'Send an video note'
+  gender: 'Select gender'
+  age: 'Enter your age'
+gender:
+  male: 'Male 🧍️'
+  female: 'Female 🧍‍♀'
+lookingFor:
+  male: 'Male 🧍️'
+  female: 'Female 🧍‍♀'
+profile:
+  main: '<b>Gender:</b> ${gender}\n<b>Looking for:</b> ${lookingFor}\n<b>Age:</b> ${age}'
+  my_video: 'My video 🎥'
+  start_matchmaking: 'Look for match 🔎'
+  edit_profile: 'Edit profile'
+matchmaking:
+  like: '❤️'
+  dislike: '👎'
+  return_to_profile: '🔙 Return to profile'
+  no_users: 'Sorry, no pair for you today, please, return later 😔'

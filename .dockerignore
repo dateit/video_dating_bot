@@ -1,0 +1,10 @@
+.git
+/log/
+/tmp/
+.pnp.*
+/.yarn/cache
+/.yarn/install-state.gz
+/.yarn/unplugged
+/pgdata
+/redisdata
+/pgadmin
