@@ -1,4 +1,3 @@
-import { Role } from '@prisma/client';
 import { Markup, Scenes } from 'telegraf';
 
 import { findUnmatchedUser } from '../services/user';
@@ -12,38 +11,31 @@ const enum MatchmakingAction {
   returnToProfile = 'returnToProfile',
 }
 
-const handleMatchmaking = async (context: IContext) => {
-  const { i18n, user: contextUser, scene } = context;
+export const matchmakingScene = new Scenes.BaseScene<IContext>(Scene.Matchmaking);
+
+matchmakingScene.enter(async context => {
+  const { i18n, user: contextUser } = context;
 
   const user = await findUnmatchedUser(contextUser);
 
   if (!user) {
-    await context.replyWithLocalization('matchmaking.no_users');
+    await context.editMessageText(
+      i18n.t('matchmaking.no_users'),
+      Markup.inlineKeyboard([
+        Markup.button.callback(i18n.t('matchmaking.return_to_profile'), MatchmakingAction.returnToProfile),
+      ]),
+    );
 
-    return scene.leave();
+    return;
   }
 
-  await context.replyWithVideoNote(user.videoNoteId);
-
-  await Markup.inlineKeyboard([
-    Markup.button.callback(i18n.t('matchmaking.like'), MatchmakingAction.like),
-    Markup.button.callback(i18n.t('matchmaking.dislike'), MatchmakingAction.dislike),
-    Markup.button.callback(i18n.t('matchmaking.return_to_profile'), MatchmakingAction.returnToProfile),
-  ]);
-};
-
-export const matchmakingScene = new Scenes.BaseScene<IContext>(Scene.Matchmaking);
-
-matchmakingScene.enter(async context => {
-  const { from, user: contextUser, scene } = context;
-
-  if (!from.id || contextUser.role === Role.ANONYMOUS) {
-    await context.replyWithLocalization('error.anonymous');
-
-    return scene.leave();
-  }
-
-  await handleMatchmaking(context);
+  await context.replyWithVideoNote(user.videoNoteId, {
+    ...Markup.inlineKeyboard([
+      Markup.button.callback(i18n.t('matchmaking.like'), MatchmakingAction.like),
+      Markup.button.callback(i18n.t('matchmaking.dislike'), MatchmakingAction.dislike),
+      Markup.button.callback(i18n.t('matchmaking.return_to_profile'), MatchmakingAction.returnToProfile),
+    ]),
+  });
 });
 
 matchmakingScene.action(MatchmakingAction.like, async context => {
