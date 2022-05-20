@@ -17,6 +17,7 @@
     "db:push": "prisma db push --accept-data-loss",
     "db:migrate": "prisma migrate dev",
     "dev": "nodemon -e ts -x ts-node src/bin/bot.ts",
+    "start": "node dist/bin/bot.js",
     "build": "tsc"
   },
   "dependencies": {
