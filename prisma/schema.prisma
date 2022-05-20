@@ -34,6 +34,8 @@ model User {
   Liked       Likes[]  @relation("LikedUser")
   createdAt   DateTime @default(now())
   updatedAt   DateTime? @updatedAt
+
+  @@unique(fields: [id, gender, lookingFor], name: "find_matches_users")
 }
 
 model Likes {
@@ -46,6 +48,7 @@ model Likes {
   createdAt DateTime @default(now())
 
   @@unique([likedId, likesId])
+  @@unique([likedId, likesId, mutual], name: "find_mutual_likes")
 }
 
 model Session {
