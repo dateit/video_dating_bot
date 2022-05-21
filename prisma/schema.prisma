@@ -22,17 +22,18 @@ enum Gender {
 }
 
 model User {
-  id          String   @id @default(uuid())
-  telegramId  String   @unique @db.VarChar(64)
-  language    String   @default("en") @db.VarChar(64)
-  videoNoteId String?  @db.VarChar(128)
+  id          String    @id @default(uuid())
+  telegramId  String    @unique @db.VarChar(64)
+  language    String    @default("en") @db.VarChar(64)
+  username    String    @default("") @db.VarChar(128)
+  videoNoteId String?   @db.VarChar(128)
   gender      Gender?
   lookingFor  Gender?
   age         Int?
-  role        Role     @default(ANONYMOUS)
-  Likers      Likes[]  @relation("LikesUser")
-  Liked       Likes[]  @relation("LikedUser")
-  createdAt   DateTime @default(now())
+  role        Role      @default(ANONYMOUS)
+  Liker       Likes[]   @relation("LikerUser")
+  Liked       Likes[]   @relation("LikedUser")
+  createdAt   DateTime  @default(now())
   updatedAt   DateTime? @updatedAt
 
   @@unique(fields: [id, gender, lookingFor], name: "find_matches_users")
@@ -40,15 +41,17 @@ model User {
 
 model Likes {
   id        String   @id @default(uuid())
+  liker     User     @relation("LikerUser", fields: [likerId], references: [id])
   liked     User     @relation("LikedUser", fields: [likedId], references: [id])
-  likes     User     @relation("LikesUser", fields: [likesId], references: [id])
   mutual    Boolean  @default(false)
+  dislike   Boolean  @default(false)
   likedId   String
-  likesId   String
+  likerId   String
   createdAt DateTime @default(now())
 
-  @@unique([likedId, likesId])
-  @@unique([likedId, likesId, mutual], name: "find_mutual_likes")
+  @@unique([likedId, likerId])
+  @@index([likedId, mutual], name: "find_mutual_liked")
+  @@index([likerId, mutual], name: "find_mutual_liker")
 }
 
 model Session {

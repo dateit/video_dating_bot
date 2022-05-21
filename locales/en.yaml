@@ -17,8 +17,18 @@ profile:
   my_video: 'My video 🎥'
   start_matchmaking: 'Look for match 🔎'
   edit_profile: 'Edit profile'
+  return_to_profile: '🔙 Return to profile'
+edit_profile:
+  back: 'Back 🔙 '
+  change_video: '✏️'
+  change_age: '✏️ Age'
+  change_looking_for: '✏️ Looking key'
+  change_gender: '✏️ Gender'
+  video: 'Send new video not'
+  age: 'Sand your age'
 matchmaking:
   like: '❤️'
   dislike: '👎'
   return_to_profile: '🔙 Return to profile'
   no_users: 'Sorry, no pair for you today, please, return later 😔'
+  match: '<b>Congratulations!</b>\nMatched, you can start the dialog with user: @${username}'

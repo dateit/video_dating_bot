@@ -31,6 +31,7 @@ const enum GenderAction {
 }
 
 const genderHandler = new Composer<IContext>();
+
 genderHandler.action(GenderAction.male, async context => {
   const { i18n, wizard, from } = context;
 
@@ -42,6 +43,7 @@ genderHandler.action(GenderAction.male, async context => {
 
   return wizard.next();
 });
+
 genderHandler.action(GenderAction.female, async context => {
   const { i18n, wizard, from } = context;
 

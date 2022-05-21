@@ -2,14 +2,18 @@ import { User } from '@prisma/client';
 
 import { prisma } from '../helpers/database';
 
-export const findOrCreateUser = async (_telegramId: number, languageCode?: string) => {
+export const findOrCreateUser = async (_telegramId: number, username?: string, languageCode?: string) => {
   const telegramId = String(_telegramId);
 
   return await prisma.user.upsert({
     where: { telegramId },
     update: {},
-    create: { telegramId, language: languageCode ?? 'en' },
+    create: { telegramId, username, language: languageCode },
   });
+};
+
+export const findUser = async (id: string) => {
+  return await prisma.user.findFirst({ where: { id } });
 };
 
 export const updateUser = async (telegramId: number, user: Partial<User>) => {
@@ -34,7 +38,7 @@ export const findUnmatchedUser = async (user: User): Promise<User> => {
 
   const likes = await prisma.likes.findMany({
     where: {
-      likesId: id,
+      likerId: id,
     },
   });
 
@@ -49,4 +53,37 @@ export const findUnmatchedUser = async (user: User): Promise<User> => {
       },
     },
   });
+};
+
+export const findMutualLikedUsers = async (user: User): Promise<Array<User>> => {
+  const { id } = user;
+
+  const mutualLikedUsers = await prisma.likes.findMany({
+    where: {
+      OR: [
+        {
+          likedId: id,
+        },
+        {
+          likerId: id,
+        },
+      ],
+      mutual: true,
+    },
+    include: {
+      liked: true,
+      liker: true,
+    },
+  });
+
+  // eslint-disable-next-line unicorn/no-array-reduce
+  return mutualLikedUsers.reduce((accumulator, { liker, liked }) => {
+    if (liker.id !== id) {
+      accumulator.push(liker);
+    } else {
+      accumulator.push(liked);
+    }
+
+    return accumulator;
+  }, [] as Array<User>);
 };
