@@ -4,7 +4,7 @@ export const createLike = async (likerId: string, likedId: string, dislike = fal
   return await prisma.likes.create({ data: { likerId, likedId, dislike } });
 };
 
-export const getMutualLiked = async (likerId: string, likedId: string) => {
+export const getLiked = async (likerId: string, likedId: string) => {
   return await prisma.likes.findFirst({
     where: {
       likedId,
@@ -22,6 +22,15 @@ export const markLikeAsMutual = async (id: string) => {
     where: { id },
     data: {
       mutual: true,
+    },
+  });
+};
+
+export const markLikeAsDisliked = async (id: string) => {
+  return await prisma.likes.update({
+    where: { id },
+    data: {
+      dislike: true,
     },
   });
 };

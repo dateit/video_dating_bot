@@ -39,7 +39,18 @@ export const findUnmatchedUser = async (user: User): Promise<User> => {
 
   const likes = await prisma.likes.findMany({
     where: {
-      likerId: id,
+      OR: [
+        {
+          likerId: id,
+        },
+        {
+          likedId: id,
+          dislike: true,
+        },
+      ],
+      AND: {
+        mutual: false,
+      },
     },
   });
 
@@ -69,7 +80,9 @@ export const findMutualLikedUsers = async (user: User): Promise<Array<User>> => 
           likerId: id,
         },
       ],
-      mutual: true,
+      AND: {
+        mutual: true,
+      },
     },
     include: {
       liked: true,

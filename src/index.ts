@@ -14,21 +14,20 @@ import { registerHandlers } from './handlers';
 const mode = process.env.NODE_ENV ?? 'development';
 const isDevelopment = mode === 'development';
 
-Tracing.addExtensionMethods();
+const configApp = async (app: FastifyInstance, bot: TelegrafInstance) => {
+  Tracing.addExtensionMethods();
 
-const configApp = (app: FastifyInstance, bot: TelegrafInstance) => {
-  app.register(fastifySentry, {
+  await app.register(fastifySentry, {
     dsn: appConfig.sentryDsn,
     environment: mode,
-    release: process.env.HEROKU_RELEASE_VERSION ?? '1.0.0',
-    integrations: [
-      new Sentry.Integrations.Http({ breadcrumbs: true, tracing: true }),
-      new Tracing.Integrations.Postgres(),
-    ],
+    release: process.env.HEROKU_RELEASE_VERSION ?? 'dev',
+    tracesSampleRate: 1,
+    integrations: [new Sentry.Integrations.Http({ breadcrumbs: true, tracing: true })],
+    normalizeDepth: 21,
   });
 
-  app.post(botConfig.webhookPath, (request, reply) => {
-    void bot.handleUpdate(request.body as Update, reply.raw);
+  app.post(botConfig.webhookPath, async (request, reply) => {
+    await bot.handleUpdate(request.body as Update, reply.raw);
   });
 
   if (isDevelopment) {
@@ -50,6 +49,7 @@ const configBot = async (app: FastifyInstance, bot: TelegrafInstance): Promise<v
 
   bot.catch(error => {
     app.log.error(error);
+    app.Sentry.captureException(error);
   });
 
   registerMiddlewares(bot);
@@ -76,7 +76,7 @@ export const startApp = async () => {
 
   const bot = new Telegraf<IContext>(botConfig.token);
 
-  configApp(app, bot);
+  await configApp(app, bot);
   await configBot(app, bot);
   await initDatabase(app);
 

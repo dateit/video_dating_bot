@@ -50,6 +50,10 @@ model Likes {
   createdAt DateTime @default(now())
 
   @@unique([likedId, likerId])
+
+  @@index([likedId])
+  @@index([likerId])
+  @@index([likedId, dislike], name: "find_disliked_liked")
   @@index([likedId, mutual], name: "find_mutual_liked")
   @@index([likerId, mutual], name: "find_mutual_liker")
 }

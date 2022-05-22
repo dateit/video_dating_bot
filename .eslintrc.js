@@ -93,6 +93,7 @@ module.exports = {
     '@typescript-eslint/no-empty-function': [ERROR, {
       allow: ['arrowFunctions']
     }],
-    'sonarjs/no-duplicate-string': OFF
+    'sonarjs/no-duplicate-string': OFF,
+    'unicorn/prefer-ternary': OFF
   },
 };

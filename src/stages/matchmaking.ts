@@ -1,6 +1,6 @@
 import { Markup, Scenes } from 'telegraf';
 
-import { getMutualLiked, createLike, markLikeAsMutual } from '../services/likes';
+import { getLiked, createLike, markLikeAsMutual, markLikeAsDisliked } from '../services/likes';
 import { findUnmatchedUser } from '../services/user';
 import { IContext } from '../types';
 
@@ -61,7 +61,7 @@ matchmakingScene.action(MatchmakingAction.like, async context => {
 
   const likedId = (scene.state as IMatchmakingState).userId;
 
-  const like = await getMutualLiked(likedId, user.id);
+  const like = await getLiked(likedId, user.id);
 
   if (!like) {
     await createLike(user.id, likedId);
@@ -84,9 +84,19 @@ matchmakingScene.action(MatchmakingAction.like, async context => {
 });
 
 matchmakingScene.action(MatchmakingAction.dislike, async context => {
+  const { user, scene } = context;
+
   await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
 
-  await createLike(context.user.id, (context.scene.state as IMatchmakingState).userId, true);
+  const likedId = (scene.state as IMatchmakingState).userId;
+
+  const like = await getLiked(likedId, user.id);
+
+  if (like) {
+    await markLikeAsDisliked(like.id);
+  } else {
+    await createLike(user.id, likedId, true);
+  }
 
   await replyWithNewMatch(context);
 });
