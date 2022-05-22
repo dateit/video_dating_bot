@@ -1,6 +1,5 @@
 import { Telegraf } from 'telegraf';
 import fastify, { FastifyInstance } from 'fastify';
-import fastifySentry from '@immobiliarelabs/fastify-sentry';
 import * as Sentry from '@sentry/node';
 import * as Tracing from '@sentry/tracing';
 import { Update } from 'typegram';
@@ -10,6 +9,7 @@ import { botConfig, appConfig } from './config';
 import { IContext, TelegrafInstance } from './types';
 import { registerMiddlewares } from './middlewares';
 import { registerHandlers } from './handlers';
+import { fastifySentry } from './helpers/sentry-plugin';
 
 const mode = process.env.NODE_ENV ?? 'development';
 const isDevelopment = mode === 'development';
