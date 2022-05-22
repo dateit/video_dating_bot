@@ -8,7 +8,7 @@ export const attachUser: MiddlewareFn<IContext> = async (context, next) => {
     throw new Error('No from field from update');
   }
 
-  const user = await findOrCreateUser(context.from.id, context.from.language_code);
+  const user = await findOrCreateUser(context.from.id, context.from.username, context.from.language_code);
 
   if (!user) {
     throw new Error(`Failed to find or create user with id ${context.from.id}`);

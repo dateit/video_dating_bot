@@ -75,7 +75,7 @@ profileScene.enter(async context => {
   const { from, user: contextUser, scene } = context;
 
   if (contextUser.role === Role.ANONYMOUS) {
-    await context.replyWithLocalization('error.anonymous');
+    await context.replyWithLocalization('errors.anonymous');
 
     return scene.leave();
   }
