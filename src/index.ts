@@ -19,7 +19,6 @@ const configApp = (app: FastifyInstance, bot: TelegrafInstance) => {
     dsn: appConfig.sentryDsn,
     environment: mode,
     release: process.env.HEROKU_RELEASE_VERSION ?? '1.0.0',
-    allowedStatusCodes: [404],
     integrations: [
       new Sentry.Integrations.Http({ breadcrumbs: true, tracing: true }),
       new Tracing.Integrations.Postgres(),
