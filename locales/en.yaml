@@ -32,3 +32,4 @@ matchmaking:
   return_to_profile: '🔙 Return to profile'
   no_users: 'Sorry, no pair for you today, please, return later 😔'
   match: '<b>Congratulations!</b>\nMatched, you can start the dialog with user: @${username}'
+  continue: 'Continue'
