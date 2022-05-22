@@ -43,7 +43,7 @@ export const findUnmatchedUser = async (user: User): Promise<User> => {
     },
   });
 
-  const excludeIds = [...likes.map(like => like.likedId), ...id];
+  const excludeIds = [...likes.map(like => like.likedId), id];
 
   return await prisma.user.findFirst({
     where: {
