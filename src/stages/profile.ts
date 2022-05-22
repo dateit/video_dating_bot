@@ -1,9 +1,9 @@
-import { Role, User } from '@prisma/client';
+import { Gender, Role, User } from '@prisma/client';
 import { Markup, Scenes } from 'telegraf';
 import { ExtraEditMessageText, ExtraReplyMessage } from 'telegraf/typings/telegram-types';
 
 import { formatGender, formatLookingFor } from '../helpers/genders';
-import { getUser, updateUser } from '../services/user';
+import { ageValidator, getUser, updateUser } from '../services/user';
 import { IContext } from '../types';
 
 import { Scene } from './scenes';
@@ -124,21 +124,37 @@ profileScene.action(ProfileAction.editProfile, async context => {
 });
 
 profileScene.action(ProfileAction.changeVideo, async context => {
-  const { i18n, scene } = context;
+  const { scene } = context;
   await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
-
-  await context.replyWithLocalization(
-    'edit_profile.video',
-    Markup.inlineKeyboard([Markup.button.callback(i18n.t('profile.return_to_profile'), ProfileAction.profileReply)]),
-  );
 
   await scene.enter(Scene.EditVideo);
 });
 
+profileScene.action(ProfileAction.changeAge, async context => {
+  const { scene } = context;
+  await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
+
+  await scene.enter(Scene.EditAge);
+});
+
+changeVideoScene.enter(async context => {
+  const { i18n } = context;
+
+  await context.replyWithLocalization(
+    'edit_profile.video',
+    Markup.inlineKeyboard([Markup.button.callback(i18n.t('profile.return_to_profile'), ProfileAction.profile)]),
+  );
+});
+
+changeVideoScene.action(ProfileAction.profile, async context => {
+  const { scene } = context;
+  await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
+
+  await scene.enter(Scene.Profile);
+});
+
 changeVideoScene.on('video_note', async context => {
   const { scene, from, message } = context;
-
-  await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
 
   await updateUser(from.id, { videoNoteId: message.video_note.file_id });
 
@@ -167,6 +183,60 @@ profileScene.action(ProfileAction.changeLookingFor, async context => {
       Markup.button.callback(i18n.t('gender.female'), ProfileAction.changeLookingForFemale),
     ]),
   );
+});
+
+profileScene.action(
+  [
+    ProfileAction.changeGenderMale,
+    ProfileAction.changeGenderFemale,
+    ProfileAction.changeLookingForMale,
+    ProfileAction.changeLookingForFemale,
+  ],
+  async context => {
+    const { from, match } = context;
+    const action = match.at(0);
+
+    switch (action) {
+      case ProfileAction.changeGenderMale: {
+        context.user = await updateUser(from.id, { gender: Gender.MALE });
+        break;
+      }
+      case ProfileAction.changeLookingForMale: {
+        context.user = await updateUser(from.id, { lookingFor: Gender.MALE });
+        break;
+      }
+      case ProfileAction.changeGenderFemale: {
+        context.user = await updateUser(from.id, { gender: Gender.FEMALE });
+        break;
+      }
+      case ProfileAction.changeLookingForFemale: {
+        context.user = await updateUser(from.id, { lookingFor: Gender.FEMALE });
+        break;
+      }
+    }
+
+    await editMessageWithProfile(context, buildProfileMainKeyboard(context));
+  },
+);
+
+changeAgeScene.enter(async context => {
+  await context.replyWithLocalization('edit_profile.age');
+});
+
+changeAgeScene.on('text', async context => {
+  const { message, scene, from } = context;
+
+  const age = Number(message.text);
+
+  if (ageValidator.validate(age).error) {
+    await context.replyWithLocalization('errors.age');
+
+    return;
+  }
+
+  await updateUser(from.id, { age });
+
+  await scene.enter(Scene.Profile);
 });
 
 profileScene.action(ProfileAction.profile, async context => {

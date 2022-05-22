@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import { User } from '@prisma/client';
 
 import { prisma } from '../helpers/database';
@@ -87,3 +88,5 @@ export const findMutualLikedUsers = async (user: User): Promise<Array<User>> => 
     return accumulator;
   }, [] as Array<User>);
 };
+
+export const ageValidator = Joi.number().min(18).max(100).required();

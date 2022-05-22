@@ -1,13 +1,10 @@
 import { Scenes, Markup, Composer } from 'telegraf';
-import Joi from 'joi';
 import { Gender, Role } from '@prisma/client';
 
-import { updateUser } from '../services/user';
+import { ageValidator, updateUser } from '../services/user';
 import { IContext } from '../types';
 
 import { Scene } from './scenes';
-
-const ageValidator = Joi.number().min(18).max(100).required();
 
 const videoNoteHandler = new Composer<IContext>();
 videoNoteHandler.on('video_note', async context => {
