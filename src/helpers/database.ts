@@ -16,18 +16,11 @@ prisma.$use(async (parameters, next) => {
     args,
   };
 
-  const scope = getCurrentHub().getScope();
-  const parentSpan = scope?.getSpan();
-  const span = parentSpan?.startChild({
+  const transaction = getCurrentHub().getScope().getTransaction();
+
+  const span = transaction?.startChild({
     op: 'db',
     description,
-    data,
-  });
-
-  // optional but nice
-  scope?.addBreadcrumb({
-    category: 'db',
-    message: description,
     data,
   });
 

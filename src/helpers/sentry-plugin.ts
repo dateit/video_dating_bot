@@ -26,12 +26,10 @@ export const fastifySentry = fp(async (app: FastifyInstance, options: ISentryPlu
   Sentry.configureScope(scope => {
     scope.addEventProcessor(event => {
       const traceData = event.contexts?.trace?.data as {
-        user?: {
-          uid: string;
-          upn: string;
-          ip: string;
+        user: {
+          username: string;
+          id: string;
         };
-
         request?: {
           method: string;
         };
@@ -41,24 +39,16 @@ export const fastifySentry = fp(async (app: FastifyInstance, options: ISentryPlu
         return event;
       }
 
-      const { user } = traceData;
-      if (user) {
-        event.user = {
-          id: user.uid,
-          username: user.upn,
-          email: user.upn,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          ip_address: user.ip,
-          ...event.user,
-        };
-      }
-
-      const { request } = traceData;
+      const { request, user } = traceData;
       if (request) {
         event.request = {
           method: request.method,
           ...event.request,
         };
+      }
+
+      if (user) {
+        event.user = user;
       }
 
       return event;
@@ -74,15 +64,10 @@ export const fastifySentry = fp(async (app: FastifyInstance, options: ISentryPlu
     }
 
     Sentry.withScope(scope => {
-      scope.setUser({
-        ip_address: request.ip,
-      });
       scope.setLevel(Severity.Error);
       scope.setTag('path', request.url);
       scope.setExtra('headers', request.headers);
-      if (request.headers['content-type'] === 'application/json' && request.body) {
-        scope.setExtra('body', request.body);
-      }
+      scope.setExtra('body', request.body);
       Sentry.captureException(error);
     });
   });
