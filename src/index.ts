@@ -14,6 +14,8 @@ import { registerHandlers } from './handlers';
 const mode = process.env.NODE_ENV ?? 'development';
 const isDevelopment = mode === 'development';
 
+Tracing.addExtensionMethods();
+
 const configApp = (app: FastifyInstance, bot: TelegrafInstance) => {
   app.register(fastifySentry, {
     dsn: appConfig.sentryDsn,
