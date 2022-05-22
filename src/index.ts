@@ -24,7 +24,7 @@ const configApp = async (app: FastifyInstance, bot: TelegrafInstance) => {
   app.post(botConfig.webhookPath, async (request, reply) => {
     await bot.handleUpdate(request.body as Update, reply.raw);
 
-    request.sentryTx.setData('user', bot.context.user);
+    request.sentryTx?.setData('user', bot.context.user);
   });
 
   if (isDevelopment) {

@@ -6,7 +6,7 @@ import { Transaction, Severity } from '@sentry/types';
 declare module 'fastify' {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   interface FastifyRequest {
-    sentryTx: Transaction;
+    sentryTx: Transaction | null;
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -81,15 +81,15 @@ export const fastifySentry = fp(async (app: FastifyInstance, options: ISentryPlu
       op: 'http.server',
       description: 'HTTP request',
     });
-    request.sentryTx.setData('request', { method: request.method });
+    request.sentryTx?.setData('request', { method: request.method });
     done();
   });
 
   app.decorate('Sentry', Sentry);
 
   app.addHook('onResponse', (request: FastifyRequest, reply: FastifyReply, done) => {
-    request.sentryTx.setHttpStatus(reply.statusCode);
-    request.sentryTx.finish();
+    request.sentryTx?.setHttpStatus(reply.statusCode);
+    request.sentryTx?.finish();
     done();
   });
 
