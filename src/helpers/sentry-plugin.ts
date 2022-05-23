@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyPluginOptions, FastifyRequest, FastifyReply } f
 import fp from 'fastify-plugin';
 import * as Sentry from '@sentry/node';
 import { Transaction, Severity } from '@sentry/types';
+import * as Tracing from '@sentry/tracing';
 
 declare module 'fastify' {
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -22,6 +23,8 @@ interface ISentryPluginOptions extends FastifyPluginOptions {
 
 export const fastifySentry = fp(async (app: FastifyInstance, options: ISentryPluginOptions) => {
   Sentry.init(options);
+
+  Tracing.addExtensionMethods();
 
   Sentry.configureScope(scope => {
     scope.addEventProcessor(event => {
@@ -48,7 +51,11 @@ export const fastifySentry = fp(async (app: FastifyInstance, options: ISentryPlu
       }
 
       if (user) {
-        event.user = user;
+        event.user = {
+          username: user.username,
+          id: user.id,
+          ...event.user,
+        };
       }
 
       return event;

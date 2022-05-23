@@ -1,6 +1,7 @@
 import { Telegraf } from 'telegraf';
 import fastify, { FastifyInstance } from 'fastify';
 import { Update } from 'typegram';
+import * as Sentry from '@sentry/node';
 
 import { initDatabase, stopDatabase } from './helpers/database';
 import { botConfig, appConfig } from './config';
@@ -19,6 +20,7 @@ const configApp = async (app: FastifyInstance, bot: TelegrafInstance) => {
     release: process.env.HEROKU_RELEASE_VERSION ?? 'dev',
     tracesSampleRate: 1,
     normalizeDepth: 21,
+    integrations: [new Sentry.Integrations.Http({ breadcrumbs: true, tracing: true })],
   });
 
   app.post(botConfig.webhookPath, async (request, reply) => {
