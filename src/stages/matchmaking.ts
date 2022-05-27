@@ -1,7 +1,7 @@
 import { Markup, Scenes } from 'telegraf';
 
-import { getLiked, createLike, markLikeAsMutual, markLikeAsDisliked } from '../services/likes';
-import { findUnmatchedUser } from '../services/user';
+import { getLiked, createLike, markLikeAsMutual, markLikeAsDisliked, getLikesCount } from '../services/likes';
+import { findUnmatchedUser, updateUser } from '../services/user';
 import { IContext } from '../types';
 
 import { Scene } from './scenes';
@@ -19,7 +19,7 @@ interface IMatchmakingState {
 export const matchmakingScene = new Scenes.BaseScene<IContext>(Scene.Matchmaking);
 
 const replyWithNewMatch = async (context: IContext) => {
-  const { i18n, user: contextUser, scene } = context;
+  const { i18n, user: contextUser, scene, from } = context;
 
   const user = await findUnmatchedUser(contextUser);
 
@@ -32,6 +32,15 @@ const replyWithNewMatch = async (context: IContext) => {
     );
 
     return;
+  }
+
+  if (!user.surveyWasShown) {
+    const likesCount = await getLikesCount(user.id);
+
+    if (likesCount >= 10) {
+      await context.replyWithLocalization('matchmaking.survey');
+      await updateUser(from.id, { surveyWasShown: true });
+    }
   }
 
   scene.state = {

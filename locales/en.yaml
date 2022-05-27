@@ -3,7 +3,11 @@ errors:
   anonymous: 'First you need to fill the profile'
   WIP: 'WIP ⚠️'
 welcome:
-  attach_video_note: 'Send an video note'
+  welcome: |
+    Welcome to video dating bot!
+    Our webpage: https://soulmatch.live
+    Record short video 🎥 about you self, find your soulmate among thousands of registered subscribers and text to liked!
+  attach_video_note: 'Send an Telegram video note 🎥'
   gender: 'Select gender'
   age: 'Enter your age'
 gender:
@@ -33,3 +37,6 @@ matchmaking:
   no_users: 'Sorry, no pair for you today, please, return later 😔'
   match: '<b>Congratulations!</b>\nMatched, you can start the dialog with user: @${username}'
   continue: 'Continue'
+  survey: |
+    Thank you for using our video dating bot and we will continue working on dating in feature.
+    We will be glad if you fill our survey https://forms.gle/rk3B2WFazRSm3jR77

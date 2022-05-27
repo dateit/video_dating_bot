@@ -17,6 +17,14 @@ export const getLiked = async (likerId: string, likedId: string) => {
   });
 };
 
+export const getLikesCount = async (likerId: string) => {
+  return await prisma.likes.count({
+    where: {
+      likerId,
+    },
+  });
+};
+
 export const markLikeAsMutual = async (id: string) => {
   return await prisma.likes.update({
     where: { id },

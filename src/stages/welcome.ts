@@ -80,5 +80,8 @@ export const welcomeScene = new Scenes.WizardScene<IContext>(
 );
 
 welcomeScene.enter(async context => {
-  await context.replyWithLocalization('welcome.attach_video_note');
+  const { i18n } = context;
+
+  await context.reply(i18n.t('welcome.welcome'));
+  await context.reply(i18n.t('welcome.attach_video_note'));
 });
