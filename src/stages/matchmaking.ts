@@ -84,7 +84,7 @@ matchmakingScene.action(MatchmakingAction.like, async context => {
 
   await context.replyWithHTML(
     i18n.t('matchmaking.match', {
-      username: like.liker.username,
+      username: like.liker.username || like.liker.telegramId,
     }),
     Markup.inlineKeyboard([
       Markup.button.callback(i18n.t('matchmaking.return_to_profile'), MatchmakingAction.returnToProfile),

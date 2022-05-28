@@ -22,20 +22,26 @@ enum Gender {
 }
 
 model User {
-  id             String    @id @default(uuid())
-  telegramId     String    @unique @db.VarChar(64)
-  language       String    @default("en") @db.VarChar(64)
-  username       String    @default("") @db.VarChar(128)
-  videoNoteId    String?   @db.VarChar(128)
-  surveyWasShown Boolean   @default(false)
-  gender         Gender?
-  lookingFor     Gender?
-  age            Int?
-  role           Role      @default(ANONYMOUS)
-  Liker          Likes[]   @relation("LikerUser")
-  Liked          Likes[]   @relation("LikedUser")
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime? @updatedAt
+  id String @id @default(uuid())
+
+  telegramId     String  @unique @db.VarChar(64)
+  language       String  @default("en") @db.VarChar(64)
+  username       String  @default("") @db.VarChar(128)
+  videoNoteId    String? @db.VarChar(128)
+  surveyWasShown Boolean @default(false)
+
+  gender     Gender?
+  lookingFor Gender?
+  age        Int?
+
+  role Role @default(ANONYMOUS)
+
+  Liker Likes[] @relation("LikerUser")
+  Liked Likes[] @relation("LikedUser")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
 
   @@unique(fields: [id, gender, lookingFor], name: "find_matches_users")
 }

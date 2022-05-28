@@ -29,10 +29,6 @@ export const fastifySentry = fp(async (app: FastifyInstance, options: ISentryPlu
   Sentry.configureScope(scope => {
     scope.addEventProcessor(event => {
       const traceData = event.contexts?.trace?.data as {
-        user: {
-          username: string;
-          id: string;
-        };
         request?: {
           method: string;
         };
@@ -42,19 +38,11 @@ export const fastifySentry = fp(async (app: FastifyInstance, options: ISentryPlu
         return event;
       }
 
-      const { request, user } = traceData;
+      const { request } = traceData;
       if (request) {
         event.request = {
           method: request.method,
           ...event.request,
-        };
-      }
-
-      if (user) {
-        event.user = {
-          username: user.username,
-          id: user.id,
-          ...event.user,
         };
       }
 

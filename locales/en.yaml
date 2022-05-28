@@ -3,7 +3,7 @@ errors:
   anonymous: 'First you need to fill the profile'
   WIP: 'WIP ⚠️'
 welcome:
-  welcome: |
+  text: |
     Welcome to video dating bot!
     Our webpage: https://soulmatch.live
     Record short video 🎥 about you self, find your soulmate among thousands of registered subscribers and text to liked!
@@ -40,3 +40,9 @@ matchmaking:
   survey: |
     Thank you for using our video dating bot and we will continue working on dating in feature.
     We will be glad if you fill our survey https://forms.gle/rk3B2WFazRSm3jR77
+help:
+  text: |
+    Our website: https://soulmatch.live
+    If you have any questions or suggestions, feel free to contact @bondiano.
+admin:
+  text: You are an admin
