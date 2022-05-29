@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { Scenes, Markup, Composer } from 'telegraf';
 import { Gender, Role } from '@prisma/client';
 
@@ -20,6 +22,10 @@ videoNoteHandler.on('video_note', async context => {
   await context.reply(i18n.t('welcome.gender'), selectGenderKeyboard);
 
   return wizard.next();
+});
+
+videoNoteHandler.on('message', async context => {
+  await context.replyWithLocalization('errors.video');
 });
 
 const enum GenderAction {
@@ -83,5 +89,9 @@ welcomeScene.enter(async context => {
   const { i18n } = context;
 
   await context.reply(i18n.t('welcome.text'));
+  await context.replyWithVideo({
+    // eslint-disable-next-line unicorn/prefer-module
+    source: fs.createReadStream(path.resolve(__dirname, './../../assets/video/how_to_video_note.mp4')),
+  });
   await context.reply(i18n.t('welcome.attach_video_note'));
 });
