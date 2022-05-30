@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginOptions, FastifyRequest, FastifyReply } from 'fastify';
 import fp from 'fastify-plugin';
 import * as Sentry from '@sentry/node';
-import { Transaction, Severity } from '@sentry/types';
+import { Transaction } from '@sentry/types';
 import * as Tracing from '@sentry/tracing';
 
 declare module 'fastify' {
@@ -59,7 +59,7 @@ export const fastifySentry = fp(async (app: FastifyInstance, options: ISentryPlu
     }
 
     Sentry.withScope(scope => {
-      scope.setLevel(Severity.Error);
+      scope.setLevel('error');
       scope.setTag('path', request.url);
       scope.setExtra('headers', request.headers);
       scope.setExtra('body', request.body);
