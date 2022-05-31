@@ -20,7 +20,9 @@ export const attachUser: MiddlewareFn<IContext> = async (context, next) => {
 
   context.user = user;
 
-  context.i18n.locale(user.language);
+  // context.i18n.locale(user.language);
+  // NOTE: We are using only russian language for now
+  context.i18n.locale('ru');
 
   return next();
 };

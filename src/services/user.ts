@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { User } from '@prisma/client';
+import { Gender, User } from '@prisma/client';
 
 import { prisma } from '../helpers/database';
 
@@ -63,6 +63,10 @@ export const findUnmatchedUser = async (user: User): Promise<User> => {
       id: {
         notIn: excludeIds,
       },
+      videoNoteId: {
+        // eslint-disable-next-line unicorn/no-null
+        not: null,
+      },
     },
   });
 };
@@ -100,6 +104,16 @@ export const findMutualLikedUsers = async (user: User): Promise<Array<User>> => 
 
     return accumulator;
   }, [] as Array<User>);
+};
+
+export const usersInfo = async () => {
+  return {
+    usersCount: await prisma.user.count(),
+    mansCount: await prisma.user.count({ where: { gender: Gender.MALE } }),
+    womansCount: await prisma.user.count({ where: { gender: Gender.FEMALE } }),
+    likesCount: await prisma.likes.count(),
+    mutualLikesCount: await prisma.likes.count({ where: { mutual: true } }),
+  };
 };
 
 export const ageValidator = Joi.number().min(18).max(100).required();

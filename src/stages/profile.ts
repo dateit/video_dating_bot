@@ -88,6 +88,18 @@ profileScene.enter(async context => {
 profileScene.action(ProfileAction.myVideo, async context => {
   const { user, i18n } = context;
 
+  if (!user.videoNoteId) {
+    await context.replyWithLocalization(
+      'profile.no_video',
+      Markup.inlineKeyboard([
+        Markup.button.callback(i18n.t('edit_profile.change_video'), ProfileAction.changeVideo),
+        Markup.button.callback(i18n.t('edit_profile.back'), ProfileAction.profileReply),
+      ]),
+    );
+
+    return;
+  }
+
   await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
 
   await context.replyWithVideoNote(
