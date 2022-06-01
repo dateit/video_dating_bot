@@ -1,6 +1,7 @@
 import { Markup, Scenes } from 'telegraf';
 
 import { getLiked, createLike, markLikeAsMutual, markLikeAsDisliked, getLikesCount } from '../services/likes';
+import { createReport } from '../services/report';
 import { findUnmatchedUser, updateUser } from '../services/user';
 import { IContext } from '../types';
 
@@ -10,6 +11,7 @@ const enum MatchmakingAction {
   like = 'like',
   dislike = 'dislike',
   returnToProfile = 'returnToProfile',
+  report = 'report',
 }
 
 interface IMatchmakingState {
@@ -54,7 +56,10 @@ const replyWithNewMatch = async (context: IContext) => {
         Markup.button.callback(i18n.t('matchmaking.like'), MatchmakingAction.like),
         Markup.button.callback(i18n.t('matchmaking.dislike'), MatchmakingAction.dislike),
       ],
-      [Markup.button.callback(i18n.t('matchmaking.return_to_profile'), MatchmakingAction.returnToProfile)],
+      [
+        Markup.button.callback(i18n.t('matchmaking.return_to_profile'), MatchmakingAction.returnToProfile),
+        Markup.button.callback(i18n.t('matchmaking.report'), MatchmakingAction.report),
+      ],
     ]),
   );
 };
@@ -106,6 +111,20 @@ matchmakingScene.action(MatchmakingAction.dislike, async context => {
   } else {
     await createLike(user.id, likedId, true);
   }
+
+  await replyWithNewMatch(context);
+});
+
+matchmakingScene.action(MatchmakingAction.report, async context => {
+  const { user, scene } = context;
+
+  await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
+
+  const likedId = (scene.state as IMatchmakingState).userId;
+
+  await createReport(user.id, likedId);
+
+  await context.replyWithLocalization('matchmaking.report_sent');
 
   await replyWithNewMatch(context);
 });

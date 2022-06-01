@@ -4,11 +4,13 @@ import { profileHandler } from './profile';
 import { startHandler } from './start';
 import { adminHandler } from './admin';
 import { helpHandler } from './help';
+import { userHandler } from './user';
 
 export const registerHandlers = (bot: TelegrafInstance) => {
   bot.start(startHandler);
 
   bot.command('profile', profileHandler);
   bot.command('admin', adminHandler);
+  bot.command('user', userHandler);
   bot.command('help', helpHandler);
 };

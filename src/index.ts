@@ -9,13 +9,12 @@ import { botConfig, appConfig } from './config';
 import { IContext, TelegrafInstance } from './types';
 import { registerMiddlewares } from './middlewares';
 import { registerHandlers } from './handlers';
-import { fastifySentry } from './helpers/sentry-plugin';
 
 const mode = process.env.NODE_ENV ?? 'development';
 const isDevelopment = mode === 'development';
 
 const configApp = async (app: FastifyInstance, bot: TelegrafInstance) => {
-  await app.register(fastifySentry, {
+  Sentry.init({
     dsn: appConfig.sentryDsn,
     environment: mode,
     release: process.env.HEROKU_RELEASE_VERSION ?? 'dev',
@@ -24,6 +23,7 @@ const configApp = async (app: FastifyInstance, bot: TelegrafInstance) => {
     integrations: [
       new Sentry.Integrations.Http({ breadcrumbs: true, tracing: true }),
       new Tracing.Integrations.Prisma({ client: prisma }),
+      new Tracing.Integrations.Postgres(),
     ],
   });
 
@@ -52,7 +52,7 @@ const configBot = async (app: FastifyInstance, bot: TelegrafInstance): Promise<v
 
   bot.catch(error => {
     app.log.error(error);
-    app.Sentry.captureException(error);
+    Sentry.captureException(error);
   });
 
   registerMiddlewares(bot);
@@ -71,7 +71,7 @@ const configBot = async (app: FastifyInstance, bot: TelegrafInstance): Promise<v
 };
 
 export const startApp = async () => {
-  const app = fastify({
+  const app = await fastify({
     logger: {
       prettyPrint: isDevelopment,
     },

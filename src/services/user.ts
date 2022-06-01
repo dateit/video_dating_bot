@@ -17,6 +17,20 @@ export const findUser = async (id: string) => {
   return await prisma.user.findFirst({ where: { id } });
 };
 
+/**
+ * @param {string | number} telegramInfo - Telegram user id or username
+ */
+export const findUserByTelegram = async (telegramInfo: number | string) => {
+  return await prisma.user.findFirst({
+    where: { OR: [{ telegramId: String(telegramInfo) }, { username: String(telegramInfo) }] },
+    include: {
+      _count: {
+        select: { Reports: true },
+      },
+    },
+  });
+};
+
 export const updateUser = async (telegramId: number, user: Partial<User>) => {
   const id = String(telegramId);
 
@@ -66,6 +80,9 @@ export const findUnmatchedUser = async (user: User): Promise<User> => {
       videoNoteId: {
         // eslint-disable-next-line unicorn/no-null
         not: null,
+      },
+      Reports: {
+        none: {},
       },
     },
   });
