@@ -9,6 +9,7 @@ import { botConfig, appConfig } from './config';
 import { IContext, TelegrafInstance } from './types';
 import { registerMiddlewares } from './middlewares';
 import { registerHandlers } from './handlers';
+import { setCommands } from './helpers/commands';
 
 const mode = process.env.NODE_ENV ?? 'development';
 const isDevelopment = mode === 'development';
@@ -57,6 +58,8 @@ const configBot = async (app: FastifyInstance, bot: TelegrafInstance): Promise<v
 
   registerMiddlewares(bot);
   registerHandlers(bot);
+
+  await setCommands(bot.context);
 
   // Enable graceful stop
   process.once('SIGINT', () => {

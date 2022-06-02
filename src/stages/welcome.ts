@@ -5,7 +5,6 @@ import { Gender, Role } from '@prisma/client';
 
 import { ageValidator, updateUser } from '../services/user';
 import { IContext } from '../types';
-import { setUserCommand } from '../helpers/commands';
 
 import { Scene } from './scenes';
 
@@ -73,8 +72,6 @@ ageHandler.on('text', async context => {
   }
 
   await updateUser(from.id, { age });
-
-  await setUserCommand(context);
 
   await scene.leave();
 
