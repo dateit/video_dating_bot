@@ -1,7 +1,11 @@
 import { prisma } from '../helpers/database';
 
-export const createLike = async (likerId: string, likedId: string, dislike = false) => {
-  return await prisma.likes.create({ data: { likerId, likedId, dislike } });
+export const createLike = async (likerId: string, likedId: string) => {
+  return await prisma.likes.create({ data: { likerId, likedId } });
+};
+
+export const createDislike = async (likerId: string, likedId: string) => {
+  return await prisma.likes.create({ data: { likerId, likedId, dislike: true } });
 };
 
 export const getLiked = async (likerId: string, likedId: string) => {

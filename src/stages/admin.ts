@@ -28,7 +28,7 @@ adminScene.enter(async context => {
 adminScene.action(AdminAction.usersList, async context => {
   const { i18n } = context;
 
-  await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
+  await context.clearUpKeyboard();
 
   await context.replyWithMarkdownV2(
     i18n.t('admin.user'),

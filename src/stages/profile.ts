@@ -72,15 +72,15 @@ export const changeVideoScene = new Scenes.BaseScene<IContext>(Scene.EditVideo);
 export const changeAgeScene = new Scenes.BaseScene<IContext>(Scene.EditAge);
 
 profileScene.enter(async context => {
-  const { from, user: contextUser, scene } = context;
+  const { from, scene } = context;
 
-  if (contextUser.role === Role.ANONYMOUS) {
+  const user = await getUser(from.id);
+
+  if (user.role === Role.ANONYMOUS) {
     await context.replyWithLocalization('errors.anonymous');
 
     return scene.leave();
   }
-
-  const user = await getUser(from.id);
 
   return await replyWithProfile(context, user, buildProfileMainKeyboard(context));
 });
@@ -100,7 +100,7 @@ profileScene.action(ProfileAction.myVideo, async context => {
     return;
   }
 
-  await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
+  await context.clearUpKeyboard();
 
   await context.replyWithVideoNote(
     user.videoNoteId,
@@ -112,7 +112,7 @@ profileScene.action(ProfileAction.myVideo, async context => {
 });
 
 profileScene.action(ProfileAction.startMatchmaking, async context => {
-  await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
+  await context.clearUpKeyboard();
 
   await context.scene.enter(Scene.Matchmaking);
 });
@@ -137,14 +137,14 @@ profileScene.action(ProfileAction.editProfile, async context => {
 
 profileScene.action(ProfileAction.changeVideo, async context => {
   const { scene } = context;
-  await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
+  await context.clearUpKeyboard();
 
   await scene.enter(Scene.EditVideo);
 });
 
 profileScene.action(ProfileAction.changeAge, async context => {
   const { scene } = context;
-  await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
+  await context.clearUpKeyboard();
 
   await scene.enter(Scene.EditAge);
 });
@@ -160,7 +160,7 @@ changeVideoScene.enter(async context => {
 
 changeVideoScene.action(ProfileAction.profile, async context => {
   const { scene } = context;
-  await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
+  await context.clearUpKeyboard();
 
   await scene.enter(Scene.Profile);
 });
@@ -258,7 +258,7 @@ profileScene.action(ProfileAction.profile, async context => {
 profileScene.action(ProfileAction.profileReply, async context => {
   const { user } = context;
 
-  await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
+  await context.clearUpKeyboard();
 
   return await replyWithProfile(context, user, buildProfileMainKeyboard(context));
 });

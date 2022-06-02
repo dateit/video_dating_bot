@@ -8,7 +8,7 @@ export const findOrCreateUser = async (_telegramId: number, username?: string, l
 
   return await prisma.user.upsert({
     where: { telegramId },
-    update: {},
+    update: { lastActivity: new Date().toISOString() },
     create: { telegramId, username, language: languageCode },
   });
 };

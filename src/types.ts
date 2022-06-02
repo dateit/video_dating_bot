@@ -9,6 +9,7 @@ export type ISession = Scenes.WizardSession;
 export interface IContext extends TelegrafContext {
   i18n: I18n;
   replyWithLocalization: (resourceKey: string, extra?: ExtraReplyMessage) => Promise<Message>;
+  clearUpKeyboard: () => Promise<void>;
 
   user: User;
 

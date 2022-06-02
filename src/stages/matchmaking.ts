@@ -1,6 +1,13 @@
 import { Markup, Scenes } from 'telegraf';
 
-import { getLiked, createLike, markLikeAsMutual, markLikeAsDisliked, getLikesCount } from '../services/likes';
+import {
+  getLiked,
+  createLike,
+  markLikeAsMutual,
+  markLikeAsDisliked,
+  getLikesCount,
+  createDislike,
+} from '../services/likes';
 import { createReport } from '../services/report';
 import { findUnmatchedUser, updateUser } from '../services/user';
 import { IContext } from '../types';
@@ -71,7 +78,7 @@ matchmakingScene.enter(async context => {
 matchmakingScene.action(MatchmakingAction.like, async context => {
   const { user, scene, i18n } = context;
 
-  await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
+  await context.clearUpKeyboard();
 
   const likedId = (scene.state as IMatchmakingState).userId;
 
@@ -100,7 +107,7 @@ matchmakingScene.action(MatchmakingAction.like, async context => {
 matchmakingScene.action(MatchmakingAction.dislike, async context => {
   const { user, scene } = context;
 
-  await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
+  await context.clearUpKeyboard();
 
   const likedId = (scene.state as IMatchmakingState).userId;
 
@@ -109,7 +116,7 @@ matchmakingScene.action(MatchmakingAction.dislike, async context => {
   if (like) {
     await markLikeAsDisliked(like.id);
   } else {
-    await createLike(user.id, likedId, true);
+    await createDislike(user.id, likedId);
   }
 
   await replyWithNewMatch(context);
@@ -118,7 +125,7 @@ matchmakingScene.action(MatchmakingAction.dislike, async context => {
 matchmakingScene.action(MatchmakingAction.report, async context => {
   const { user, scene } = context;
 
-  await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
+  await context.clearUpKeyboard();
 
   const likedId = (scene.state as IMatchmakingState).userId;
 
@@ -130,6 +137,6 @@ matchmakingScene.action(MatchmakingAction.report, async context => {
 });
 
 matchmakingScene.action(MatchmakingAction.returnToProfile, async context => {
-  await context.editMessageReplyMarkup(Markup.inlineKeyboard([]).reply_markup);
+  await context.clearUpKeyboard();
   await context.scene.enter(Scene.Profile);
 });
