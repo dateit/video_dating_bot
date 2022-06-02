@@ -1,5 +1,6 @@
 import { IContext } from '../types';
 
+// UNUSED: Could be fixed after implement localization
 export const setCommands = (context: Partial<IContext>) => {
   const { i18n, telegram } = context;
 
