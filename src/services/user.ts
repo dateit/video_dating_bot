@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { Gender, User } from '@prisma/client';
+import { Gender, User, Prisma } from '@prisma/client';
 
 import { prisma } from '../helpers/database';
 
@@ -51,47 +51,86 @@ export const getUser = async (telegramId: number) => {
 export const findUnmatchedUser = async (user: User): Promise<User> => {
   const { id, lookingFor, gender } = user;
 
-  const likes = await prisma.likes.findMany({
+  const baseCondition: Prisma.UserWhereInput = {
+    id: {
+      not: id,
+    },
+    gender: lookingFor,
+    lookingFor: gender,
+    videoNoteId: {
+      // eslint-disable-next-line unicorn/no-null
+      not: null,
+    },
+    // Only when no report to found
+    Reports: {
+      none: {},
+    },
+    // User's like no found
+    Liked: {
+      every: {
+        likerId: {
+          not: id,
+        },
+      },
+    },
+  };
+
+  const likedCurrentUser = await prisma.user.findFirst({
     where: {
-      OR: [
-        {
-          likerId: id,
-        },
-        {
+      ...baseCondition,
+      Liker: {
+        some: {
           likedId: id,
-          dislike: true,
+          dislike: false,
+          mutual: false,
         },
-      ],
-      AND: {
-        mutual: false,
       },
     },
   });
 
-  const excludeIds = [...likes.map(like => like.likedId), id];
+  if (likedCurrentUser) {
+    return likedCurrentUser;
+  }
 
   return await prisma.user.findFirst({
     where: {
-      gender: lookingFor,
-      lookingFor: gender,
-      id: {
-        notIn: excludeIds,
-      },
-      videoNoteId: {
-        // eslint-disable-next-line unicorn/no-null
-        not: null,
-      },
-      Reports: {
-        none: {},
+      ...baseCondition,
+      // Found didn't dislike user and like still doesn't mark as mutual
+      Liker: {
+        every: {
+          NOT: {
+            OR: [
+              {
+                likedId: id,
+                dislike: true,
+              },
+              {
+                likedId: id,
+                mutual: true,
+              },
+            ],
+          },
+        },
       },
     },
+    orderBy: [
+      {
+        lastActivity: 'desc',
+      },
+      {
+        Liker: {
+          _count: 'desc',
+        },
+      },
+    ],
   });
 };
 
-export const findMutualLikedUsers = async (user: User): Promise<Array<User>> => {
+export const findMutualLikedUsers = async (user: User) => {
   const { id } = user;
 
-  const mutualLikedUsers = await prisma.likes.findMany({
+  // eslint-disable-next-line unicorn/no-array-reduce
+  return await prisma.likes.findMany({
     where: {
       OR: [
         {
@@ -110,17 +149,6 @@ export const findMutualLikedUsers = async (user: User): Promise<Array<User>> => 
       liker: true,
     },
   });
-
-  // eslint-disable-next-line unicorn/no-array-reduce
-  return mutualLikedUsers.reduce((accumulator, { liker, liked }) => {
-    if (liker.id !== id) {
-      accumulator.push(liker);
-    } else {
-      accumulator.push(liked);
-    }
-
-    return accumulator;
-  }, [] as Array<User>);
 };
 
 export const usersInfo = async () => {
