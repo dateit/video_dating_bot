@@ -2,6 +2,9 @@ interface IMessage {
   text: string;
 }
 
+/**
+ * Last argument will contain the rest of the message.
+ */
 export const parseCommandArguments = <M extends IMessage, C extends string, A extends string>(
   message: M,
   command: C,
@@ -11,7 +14,11 @@ export const parseCommandArguments = <M extends IMessage, C extends string, A ex
 
   // eslint-disable-next-line unicorn/no-array-reduce
   return argumentNames.reduce((accumulator, argument, index) => {
-    accumulator[argument] = _arguments[index];
+    if (index === argumentNames.length - 1) {
+      accumulator[argument] = _arguments.slice(index).join(' ');
+    } else {
+      accumulator[argument] = _arguments[index];
+    }
 
     return accumulator;
   }, {} as Record<A, string>);
