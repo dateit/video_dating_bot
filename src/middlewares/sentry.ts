@@ -35,6 +35,8 @@ export const attachSentry: MiddlewareFn<IContext> = async (context, next) => {
     description: 'Telegram message',
   });
 
+  Sentry.getCurrentHub().configureScope(scope => scope.setSpan(transaction));
+
   transaction.setData('user', user);
   transaction.setData('message', message);
 
