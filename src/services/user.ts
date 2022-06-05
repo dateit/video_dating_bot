@@ -161,6 +161,18 @@ export const usersInfo = async () => {
     womansCount: await prisma.user.count({ where: { gender: Gender.FEMALE } }),
     likesCount: await prisma.likes.count(),
     mutualLikesCount: await prisma.likes.count({ where: { mutual: true } }),
+    anonymousCount: await prisma.user.count({
+      where: {
+        role: Role.ANONYMOUS,
+      },
+    }),
+    newUserCount: await prisma.user.count({
+      where: {
+        createdAt: {
+          gt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+        },
+      },
+    }),
   };
 };
 
