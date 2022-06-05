@@ -3,7 +3,7 @@ import { Markup, Scenes } from 'telegraf';
 import { ExtraEditMessageText, ExtraReplyMessage } from 'telegraf/typings/telegram-types';
 
 import { formatGender, formatLookingFor } from '../helpers/genders';
-import { ageValidator, getUser, updateUser } from '../services/user';
+import { addDeletedVideos, ageValidator, getUser, updateUser } from '../services/user';
 import { IContext } from '../types';
 
 import { Scene } from './scenes';
@@ -90,7 +90,7 @@ profileScene.action(ProfileAction.myVideo, async context => {
 
   if (!user.videoNoteId) {
     await context.replyWithLocalization(
-      'profile.no_video',
+      'profile.no_video_note',
       Markup.inlineKeyboard([
         Markup.button.callback(i18n.t('edit_profile.change_video'), ProfileAction.changeVideo),
         Markup.button.callback(i18n.t('edit_profile.back'), ProfileAction.profileReply),
@@ -166,7 +166,22 @@ changeVideoScene.action(ProfileAction.profile, async context => {
 });
 
 changeVideoScene.on('video_note', async context => {
-  const { scene, from, message } = context;
+  const { scene, from, message, user } = context;
+
+  console.log('message.video_note', message.video_note);
+
+  if (message.video_note.duration < 10) {
+    await context.replyWithLocalization('errors.video_duration');
+
+    return;
+  }
+
+  if (user.videoNoteId) {
+    await addDeletedVideos({
+      videoId: user.videoNoteId,
+      userId: user.id,
+    });
+  }
 
   await updateUser(from.id, { videoNoteId: message.video_note.file_id });
 

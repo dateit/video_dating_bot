@@ -25,8 +25,11 @@ model User {
   id String @id @default(uuid())
 
   telegramId     String  @unique @db.VarChar(64)
+  telegramChatId String? @unique @db.VarChar(64)
   language       String  @default("en") @db.VarChar(64)
   username       String  @default("") @db.VarChar(128)
+  firstname      String? @default("") @db.VarChar(128)
+  lastname       String? @default("") @db.VarChar(128)
   videoNoteId    String? @db.VarChar(128)
   surveyWasShown Boolean @default(false)
 
@@ -36,29 +39,33 @@ model User {
 
   role Role @default(ANONYMOUS)
 
-  Liker Likes[] @relation("LikerUser")
-  Liked Likes[] @relation("LikedUser")
+  liker Likes[] @relation("LikerUser")
+  liked Likes[] @relation("LikedUser")
 
-  Reporter Report[] @relation("ReporterUser")
-  Reports  Report[] @relation("ReportedUser")
+  reporter Report[] @relation("ReporterUser")
+  reports  Report[] @relation("ReportedUser")
+
+  deletedVideos DeletedVideos[] @relation("DeletedVideosUser")
 
   createdAt    DateTime  @default(now())
   lastActivity DateTime? @default(now())
   updatedAt    DateTime? @updatedAt
 
   @@unique(fields: [id, gender, lookingFor], name: "find_matches_users")
+  @@index([gender, lookingFor])
+  @@index([username])
 }
 
 model Likes {
-  id        String   @id @default(uuid())
-  liker     User     @relation("LikerUser", fields: [likerId], references: [id])
-  liked     User     @relation("LikedUser", fields: [likedId], references: [id])
-  mutual    Boolean  @default(false)
-  dislike   Boolean  @default(false)
+  id        String    @id @default(uuid())
+  liker     User      @relation("LikerUser", fields: [likerId], references: [id])
+  liked     User      @relation("LikedUser", fields: [likedId], references: [id])
+  mutual    Boolean   @default(false)
+  dislike   Boolean   @default(false)
   likedId   String
   likerId   String
-  createdAt DateTime @default(now())
-
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@unique([likedId, likerId])
   @@index([likedId])
@@ -69,9 +76,24 @@ model Likes {
   @@index([likerId, mutual], name: "find_mutual_liker")
 }
 
+model DeletedVideos {
+  id      String  @id @default(uuid())
+  reason  String? @db.VarChar(256)
+  videoId String  @db.VarChar(128)
+  userId  String
+
+  user User @relation("DeletedVideosUser", fields: [userId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@unique([videoId, userId])
+  @@index([userId])
+}
+
 model Report {
   id       String  @id @default(uuid())
-  reason   String? @db.VarChar(128)
+  reason   String? @db.VarChar(256)
   reporter User    @relation("ReporterUser", fields: [reporterId], references: [id])
   reported User    @relation("ReportedUser", fields: [reportedId], references: [id])
 

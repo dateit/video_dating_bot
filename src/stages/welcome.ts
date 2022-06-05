@@ -26,6 +26,12 @@ const videoNoteHandler = new Composer<IContext>();
 videoNoteHandler.on('video_note', async context => {
   const { i18n, wizard, from, message } = context;
 
+  if (message.video_note.duration < 10) {
+    await context.replyWithLocalization('errors.video_duration');
+
+    return;
+  }
+
   const selectGenderKeyboard = Markup.inlineKeyboard([
     Markup.button.callback(i18n.t('gender.male'), GenderAction.male),
     Markup.button.callback(i18n.t('gender.female'), GenderAction.female),

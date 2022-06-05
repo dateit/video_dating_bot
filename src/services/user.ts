@@ -1,15 +1,15 @@
 import Joi from 'joi';
-import { Gender, User, Prisma } from '@prisma/client';
+import { Gender, User, Prisma, Role } from '@prisma/client';
 
 import { prisma } from '../helpers/database';
 
-export const findOrCreateUser = async (_telegramId: number, username?: string, languageCode?: string) => {
+export const findOrCreateUser = async (_telegramId: number, user: Partial<User>) => {
   const telegramId = String(_telegramId);
 
   return await prisma.user.upsert({
     where: { telegramId },
     update: { lastActivity: new Date().toISOString() },
-    create: { telegramId, username, language: languageCode },
+    create: { telegramId, ...user },
   });
 };
 
@@ -25,13 +25,13 @@ export const findUserByTelegram = async (telegramInfo: number | string) => {
     where: { OR: [{ telegramId: String(telegramInfo) }, { username: String(telegramInfo) }] },
     include: {
       _count: {
-        select: { Reports: true },
+        select: { reports: true },
       },
     },
   });
 };
 
-export const updateUser = async (telegramId: number, user: Partial<User>) => {
+export const updateUser = async (telegramId: number | string, user: Partial<User>) => {
   const id = String(telegramId);
 
   return await prisma.user.update({
@@ -57,16 +57,19 @@ export const findUnmatchedUser = async (user: User): Promise<User> => {
     },
     gender: lookingFor,
     lookingFor: gender,
+    role: {
+      not: Role.ANONYMOUS,
+    },
     videoNoteId: {
       // eslint-disable-next-line unicorn/no-null
       not: null,
     },
     // Only when no report to found
-    Reports: {
+    reports: {
       none: {},
     },
     // User's like no found
-    Liked: {
+    liked: {
       every: {
         likerId: {
           not: id,
@@ -78,7 +81,7 @@ export const findUnmatchedUser = async (user: User): Promise<User> => {
   const likedCurrentUser = await prisma.user.findFirst({
     where: {
       ...baseCondition,
-      Liker: {
+      liker: {
         some: {
           likedId: id,
           dislike: false,
@@ -96,7 +99,7 @@ export const findUnmatchedUser = async (user: User): Promise<User> => {
     where: {
       ...baseCondition,
       // Found didn't dislike user and like still doesn't mark as mutual
-      Liker: {
+      liker: {
         every: {
           NOT: {
             OR: [
@@ -118,7 +121,7 @@ export const findUnmatchedUser = async (user: User): Promise<User> => {
         lastActivity: 'desc',
       },
       {
-        Liker: {
+        liker: {
           _count: 'desc',
         },
       },
@@ -159,6 +162,10 @@ export const usersInfo = async () => {
     likesCount: await prisma.likes.count(),
     mutualLikesCount: await prisma.likes.count({ where: { mutual: true } }),
   };
+};
+
+export const addDeletedVideos = async (videoData: { videoId: string; userId: string; reason?: string }) => {
+  return await prisma.deletedVideos.create({ data: videoData });
 };
 
 export const ageValidator = Joi.number().min(18).max(100).required();

@@ -35,7 +35,7 @@ export const userHandler = async (context: IContext) => {
       gender: formatGender(user.gender, context),
       lookingFor: formatLookingFor(user.lookingFor, context),
       age: user.age,
-      reportsCount: user._count.Reports,
+      reportsCount: user._count.reports,
     }),
   );
 };

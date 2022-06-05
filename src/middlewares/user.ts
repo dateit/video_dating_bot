@@ -8,7 +8,13 @@ export const attachUser: MiddlewareFn<IContext> = async (context, next) => {
     throw new Error('No from field from update');
   }
 
-  const user = await findOrCreateUser(context.from.id, context.from.username, context.from.language_code);
+  const user = await findOrCreateUser(context.from.id, {
+    username: context.from.username,
+    firstname: context.from.first_name,
+    lastname: context.from.last_name,
+    language: context.from.language_code,
+    telegramChatId: String(context.chat.id),
+  });
 
   if (!user) {
     throw new Error(`Failed to find or create user with id ${context.from.id}`);
@@ -16,6 +22,10 @@ export const attachUser: MiddlewareFn<IContext> = async (context, next) => {
 
   if (context.from.username && context.from.username !== user.username) {
     await updateUser(context.from.id, { username: context.from.username });
+  }
+
+  if (String(context.chat.id) !== user.telegramChatId) {
+    await updateUser(context.from.id, { telegramChatId: String(context.chat.id) });
   }
 
   context.user = user;
