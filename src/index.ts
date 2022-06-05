@@ -19,11 +19,9 @@ const configApp = async (app: FastifyInstance, bot: TelegrafInstance) => {
     environment: mode,
     release: process.env.HEROKU_RELEASE_VERSION ?? 'dev',
     tracesSampleRate: 1,
-    normalizeDepth: 21,
     integrations: [
       new Sentry.Integrations.Http({ breadcrumbs: true, tracing: true }),
       new Tracing.Integrations.Prisma({ client: prisma }),
-      new Tracing.Integrations.Postgres(),
     ],
   });
 

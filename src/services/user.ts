@@ -166,7 +166,7 @@ export const usersInfo = async () => {
         role: Role.ANONYMOUS,
       },
     }),
-    newUserCount: await prisma.user.count({
+    newUsersCount: await prisma.user.count({
       where: {
         createdAt: {
           gt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
