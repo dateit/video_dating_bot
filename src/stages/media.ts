@@ -34,7 +34,7 @@ mediaContentHandler.on('video', async context => {
     type: (wizard.state as IMediaWizardState).mediaType,
   });
 
-  await context.reply(
+  await context.replyWithMarkdownV2(
     i18n.t('media.uploaded', {
       id: video.file_id,
     }),
