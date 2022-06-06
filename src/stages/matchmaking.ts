@@ -92,18 +92,19 @@ matchmakingScene.action(MatchmakingAction.like, async context => {
     return;
   }
 
-  await markLikeAsMutual(like.id);
+  const { liker, id } = like;
 
-  const { liker } = like;
-
-  await context.replyWithHTML(
-    i18n.t(`matchmaking.match_${liker.gender.toLocaleLowerCase()}`, {
-      username: liker.username || liker.telegramId,
-    }),
-    Markup.inlineKeyboard([
-      Markup.button.callback(i18n.t('matchmaking.return_to_profile'), MatchmakingAction.returnToProfile),
-    ]),
-  );
+  await Promise.all([
+    markLikeAsMutual(id),
+    context.replyWithHTML(
+      i18n.t(`matchmaking.match_${liker.gender.toLocaleLowerCase()}`, {
+        username: liker.username || liker.telegramId,
+      }),
+      Markup.inlineKeyboard([
+        Markup.button.callback(i18n.t('matchmaking.return_to_profile'), MatchmakingAction.returnToProfile),
+      ]),
+    ),
+  ]);
 });
 
 matchmakingScene.action(MatchmakingAction.dislike, async context => {
@@ -131,9 +132,7 @@ matchmakingScene.action(MatchmakingAction.report, async context => {
 
   const likedId = (scene.state as IMatchmakingState).userId;
 
-  await createReport(user.id, likedId);
-
-  await context.replyWithLocalization('matchmaking.report_sent');
+  await Promise.all([createReport(user.id, likedId), context.replyWithLocalization('matchmaking.report_sent')]);
 
   await replyWithNewMatch(context);
 });

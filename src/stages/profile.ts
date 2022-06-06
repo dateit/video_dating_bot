@@ -3,7 +3,7 @@ import { Markup, Scenes } from 'telegraf';
 import { ExtraEditMessageText, ExtraReplyMessage } from 'telegraf/typings/telegram-types';
 
 import { formatGender, formatLookingFor } from '../helpers/genders';
-import { addDeletedVideos, ageValidator, getUser, updateUser } from '../services/user';
+import { addDeletedVideos, ageValidator, updateUser } from '../services/user';
 import { IContext } from '../types';
 
 import { Scene } from './scenes';
@@ -72,9 +72,7 @@ export const changeVideoScene = new Scenes.BaseScene<IContext>(Scene.EditVideo);
 export const changeAgeScene = new Scenes.BaseScene<IContext>(Scene.EditAge);
 
 profileScene.enter(async context => {
-  const { from, scene } = context;
-
-  const user = await getUser(from.id);
+  const { user, scene } = context;
 
   if (user.role === Role.ANONYMOUS) {
     await context.replyWithLocalization('errors.anonymous');
@@ -168,8 +166,6 @@ changeVideoScene.action(ProfileAction.profile, async context => {
 changeVideoScene.on('video_note', async context => {
   const { scene, from, message, user } = context;
 
-  console.log('message.video_note', message.video_note);
-
   if (message.video_note.duration < 10) {
     await context.replyWithLocalization('errors.video_duration');
 
@@ -183,7 +179,7 @@ changeVideoScene.on('video_note', async context => {
     });
   }
 
-  await updateUser(from.id, { videoNoteId: message.video_note.file_id });
+  context.user = await updateUser(from.id, { videoNoteId: message.video_note.file_id });
 
   await scene.enter(Scene.Profile);
 });
@@ -261,7 +257,7 @@ changeAgeScene.on('text', async context => {
     return;
   }
 
-  await updateUser(from.id, { age });
+  context.user = await updateUser(from.id, { age });
 
   await scene.enter(Scene.Profile);
 });

@@ -1,16 +1,19 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { Scenes, Markup, Composer } from 'telegraf';
 import { Gender, Role } from '@prisma/client';
 
-import { ageValidator, updateUser } from '../services/user';
+import { ageValidator, getUser, updateUser } from '../services/user';
 import { IContext } from '../types';
+import { findMediaByType, findOneMediaByType } from '../services/media';
 
 import { Scene } from './scenes';
 
 const enum GenderAction {
   male = 'male',
   female = 'female',
+}
+
+const enum MainAction {
+  continue = 'continue',
 }
 
 const buildLookingForKeyboard = (context: IContext) => {
@@ -22,9 +25,56 @@ const buildLookingForKeyboard = (context: IContext) => {
   ]);
 };
 
+const buildGenderKeyboard = (context: IContext) => {
+  const { i18n } = context;
+
+  return Markup.inlineKeyboard([
+    Markup.button.callback(i18n.t('gender.male'), GenderAction.male),
+    Markup.button.callback(i18n.t('gender.female'), GenderAction.female),
+  ]);
+};
+
+const replyWithVideoGuide = async (context: IContext) => {
+  const { from, i18n } = context;
+  const user = await getUser(from.id);
+
+  const gender = user.gender.toLowerCase();
+
+  const videos = await findMediaByType(`${gender}_video`);
+
+  if (videos.length > 0) {
+    const medias = videos.map(video => ({
+      type: 'video' as const,
+      media: video.telegramMediaId,
+    }));
+
+    await context.replyWithMediaGroup(medias);
+  }
+
+  await context.replyWithHTML(i18n.t('welcome.attach_video_info'), {
+    disable_web_page_preview: true,
+    ...Markup.inlineKeyboard([Markup.button.callback(i18n.t('welcome.record_video'), MainAction.continue)]),
+  });
+};
+
 const videoNoteHandler = new Composer<IContext>();
+
+videoNoteHandler.action(MainAction.continue, async context => {
+  const { i18n } = context;
+
+  const video = await findOneMediaByType('welcome_video');
+
+  await Promise.all([
+    context.clearUpKeyboard(),
+    context.replyWithVideo(video.telegramMediaId, {
+      caption: i18n.t('welcome.attach_video_note'),
+      parse_mode: 'HTML',
+    }),
+  ]);
+});
+
 videoNoteHandler.on('video_note', async context => {
-  const { i18n, wizard, from, message } = context;
+  const { wizard, i18n, from, message } = context;
 
   if (message.video_note.duration < 10) {
     await context.replyWithLocalization('errors.video_duration');
@@ -32,14 +82,14 @@ videoNoteHandler.on('video_note', async context => {
     return;
   }
 
-  const selectGenderKeyboard = Markup.inlineKeyboard([
-    Markup.button.callback(i18n.t('gender.male'), GenderAction.male),
-    Markup.button.callback(i18n.t('gender.female'), GenderAction.female),
-  ]);
+  const user = await updateUser(from.id, { videoNoteId: message.video_note.file_id });
 
-  await updateUser(from.id, { videoNoteId: message.video_note.file_id });
+  const gender = user.gender.toLowerCase();
 
-  await context.reply(i18n.t('welcome.gender'), selectGenderKeyboard);
+  await context.replyWithLocalization(
+    `welcome.finish_text_${gender}`,
+    Markup.inlineKeyboard([Markup.button.callback(i18n.t('welcome.finish'), MainAction.continue)]),
+  );
 
   return wizard.next();
 });
@@ -48,7 +98,28 @@ videoNoteHandler.on('message', async context => {
   await context.replyWithLocalization('errors.video');
 });
 
+const finalStepHandler = new Composer<IContext>();
+
+finalStepHandler.action(MainAction.continue, async context => {
+  const { scene, from } = context;
+
+  await context.clearUpKeyboard();
+
+  context.user = await updateUser(from.id, { role: Role.USER });
+
+  await scene.leave();
+
+  await scene.enter(Scene.Matchmaking);
+});
+
 const genderHandler = new Composer<IContext>();
+
+genderHandler.action(MainAction.continue, async context => {
+  await Promise.all([
+    context.clearUpKeyboard(),
+    context.replyWithLocalization('welcome.gender', buildGenderKeyboard(context)),
+  ]);
+});
 
 genderHandler.action(GenderAction.male, async context => {
   const { wizard, from } = context;
@@ -100,8 +171,9 @@ lookingForHandler.action(GenderAction.female, async context => {
 });
 
 const ageHandler = new Composer<IContext>();
+
 ageHandler.on('text', async context => {
-  const { message, scene, from } = context;
+  const { message, wizard, from } = context;
 
   const age = Number(message.text);
 
@@ -111,28 +183,29 @@ ageHandler.on('text', async context => {
     return;
   }
 
-  await updateUser(from.id, { age, role: Role.USER });
+  await updateUser(from.id, { age });
 
-  await scene.leave();
+  await replyWithVideoGuide(context);
 
-  await scene.enter(Scene.Profile);
+  return wizard.next();
 });
 
 export const welcomeScene = new Scenes.WizardScene<IContext>(
   Scene.Welcome,
-  videoNoteHandler,
   genderHandler,
   lookingForHandler,
   ageHandler,
+  videoNoteHandler,
+  finalStepHandler,
 );
 
 welcomeScene.enter(async context => {
   const { i18n } = context;
 
-  await context.replyWithHTML(i18n.t('welcome.text'), { disable_web_page_preview: true });
-  await context.replyWithVideo({
-    // eslint-disable-next-line unicorn/prefer-module
-    source: fs.createReadStream(path.resolve(__dirname, './../../assets/video/how_to_video_note.mp4')),
+  const photo = await findOneMediaByType('welcome_photo');
+
+  await context.replyWithPhoto(photo.telegramMediaId, {
+    caption: i18n.t('welcome.text'),
+    ...Markup.inlineKeyboard([Markup.button.callback(i18n.t('welcome.continue'), MainAction.continue)]),
   });
-  await context.replyWithHTML(i18n.t('welcome.attach_video_note'), { disable_web_page_preview: true });
 });

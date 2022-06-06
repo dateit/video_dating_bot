@@ -17,8 +17,6 @@ adminScene.enter(async context => {
 
   const userStats = await usersInfo();
 
-  await context.replyWithLocalization('admin.text');
-
   await context.replyWithMarkdownV2(
     i18n.t('admin.welcome', userStats),
     Markup.inlineKeyboard([Markup.button.callback(i18n.t('admin.users_list'), AdminAction.usersList)]),

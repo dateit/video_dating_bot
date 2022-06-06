@@ -5,13 +5,13 @@ import { Message } from 'typegram';
 import { IContext } from '../types';
 
 const buildTransactionName = (message: Message, context: IContext): string => {
-  const textMessage = (message as Message.TextMessage).text;
+  const textMessage = (message as Message.TextMessage)?.text;
 
   if (textMessage) {
     return textMessage.split(' ')[0];
   }
 
-  const videoNoteMessage = (message as Message.VideoNoteMessage).video_note;
+  const videoNoteMessage = (message as Message.VideoNoteMessage)?.video_note;
 
   if (videoNoteMessage) {
     return 'video_note';

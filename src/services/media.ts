@@ -25,3 +25,19 @@ export const findMediaByTelegramId = async (telegramMediaId: string) => {
     },
   });
 };
+
+export const findMediaByType = async (type: string) => {
+  return await prisma.media.findMany({
+    where: {
+      type,
+    },
+  });
+};
+
+export const findOneMediaByType = async (type: string) => {
+  return await prisma.media.findFirst({
+    where: {
+      type,
+    },
+  });
+};

@@ -24,7 +24,7 @@ mediaTypeHandler.on('text', async context => {
 const mediaContentHandler = new Composer<IContext>();
 
 mediaContentHandler.on('video', async context => {
-  const { message, i18n, wizard } = context;
+  const { message, i18n, wizard, scene } = context;
 
   const { video } = message;
 
@@ -40,7 +40,33 @@ mediaContentHandler.on('video', async context => {
     }),
   );
 
-  return wizard.next();
+  await scene.leave();
+
+  await scene.enter(Scene.Profile);
+});
+
+mediaContentHandler.on('photo', async context => {
+  const { message, i18n, wizard, scene } = context;
+
+  const { photo } = message;
+
+  const telegramMediaId = photo[photo.length - 1].file_id;
+
+  await createMedia({
+    telegramMediaId,
+    telegramMediaType: 'photo',
+    type: (wizard.state as IMediaWizardState).mediaType,
+  });
+
+  await context.replyWithMarkdownV2(
+    i18n.t('media.uploaded', {
+      id: telegramMediaId,
+    }),
+  );
+
+  await scene.leave();
+
+  await scene.enter(Scene.Profile);
 });
 
 export const MediaScene = new Scenes.WizardScene<IContext>(Scene.Media, mediaTypeHandler, mediaContentHandler);
