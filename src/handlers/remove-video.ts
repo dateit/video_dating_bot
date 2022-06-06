@@ -5,7 +5,7 @@ import { addDeletedVideos, findUserByTelegram, updateUser } from '../services/us
 import { parseCommandArguments } from '../helpers/parse-command';
 import { IContext } from '../types';
 
-export const removeVideo = async (context: IContext) => {
+export const removeVideoHandler = async (context: IContext) => {
   const { i18n, user: adminUser, message, telegram } = context;
 
   if (adminUser.role !== Role.ADMIN) {

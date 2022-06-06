@@ -155,24 +155,51 @@ export const findMutualLikedUsers = async (user: User) => {
 };
 
 export const usersInfo = async () => {
-  return {
-    usersCount: await prisma.user.count(),
-    mansCount: await prisma.user.count({ where: { gender: Gender.MALE } }),
-    womansCount: await prisma.user.count({ where: { gender: Gender.FEMALE } }),
-    likesCount: await prisma.likes.count(),
-    mutualLikesCount: await prisma.likes.count({ where: { mutual: true } }),
-    anonymousCount: await prisma.user.count({
+  const [
+    usersCount,
+    mansCount,
+    womansCount,
+    likesCount,
+    mutualLikesCount,
+    anonymousCount,
+    newUsersCount,
+    lastDayActiveCount,
+  ] = await Promise.all([
+    prisma.user.count(),
+    prisma.user.count({ where: { gender: Gender.MALE } }),
+    prisma.user.count({ where: { gender: Gender.FEMALE } }),
+    prisma.likes.count(),
+    prisma.likes.count({ where: { mutual: true } }),
+    prisma.user.count({
       where: {
         role: Role.ANONYMOUS,
       },
     }),
-    newUsersCount: await prisma.user.count({
+    prisma.user.count({
       where: {
         createdAt: {
           gt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
         },
       },
     }),
+    prisma.user.count({
+      where: {
+        lastActivity: {
+          gt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+        },
+      },
+    }),
+  ]);
+
+  return {
+    usersCount,
+    mansCount,
+    womansCount,
+    likesCount,
+    mutualLikesCount,
+    anonymousCount,
+    newUsersCount,
+    lastDayActiveCount,
   };
 };
 

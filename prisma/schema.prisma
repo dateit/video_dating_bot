@@ -91,6 +91,18 @@ model DeletedVideos {
   @@index([userId])
 }
 
+model Media {
+  id                String @id @default(uuid())
+  telegramMediaId   String @db.VarChar(128)
+  telegramMediaType String @db.VarChar(64)
+  type              String @db.VarChar(64)
+
+  createdAt DateTime @default(now())
+
+  @@index([type])
+  @@index([telegramMediaId])
+}
+
 model Report {
   id       String  @id @default(uuid())
   reason   String? @db.VarChar(256)

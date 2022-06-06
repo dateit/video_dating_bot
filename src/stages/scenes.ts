@@ -5,4 +5,5 @@ export const enum Scene {
   EditVideo = 'EDIT_VIDEO_WIZARD_SCENE',
   EditAge = 'EDIT_AGE_WIZARD_SCENE',
   Admin = 'ADMIN_SCENE',
+  Media = 'MEDIA_WIZARD_SCENE',
 }

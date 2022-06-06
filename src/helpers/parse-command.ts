@@ -10,7 +10,11 @@ export const parseCommandArguments = <M extends IMessage, C extends string, A ex
   command: C,
   argumentNames: readonly A[],
 ) => {
-  const _arguments = message.text.replace(`/${command} `, '').split(' ');
+  const _arguments = message.text.replace(`/${command}`, '').split(' ').filter(Boolean);
+
+  if (_arguments.length === 0) {
+    return {} as Record<A, string | undefined>;
+  }
 
   // eslint-disable-next-line unicorn/no-array-reduce
   return argumentNames.reduce((accumulator, argument, index) => {

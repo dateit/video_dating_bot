@@ -56,9 +56,9 @@ const replyWithNewMatch = async (context: IContext) => {
     userId: user.id,
   } as IMatchmakingState;
 
-  await context.replyWithVideoNote(
-    user.videoNoteId,
-    Markup.inlineKeyboard([
+  await context.replyWithVideoNote(user.videoNoteId, {
+    protect_content: true,
+    ...Markup.inlineKeyboard([
       [
         Markup.button.callback(i18n.t('matchmaking.like'), MatchmakingAction.like),
         Markup.button.callback(i18n.t('matchmaking.dislike'), MatchmakingAction.dislike),
@@ -68,7 +68,7 @@ const replyWithNewMatch = async (context: IContext) => {
         Markup.button.callback(i18n.t('matchmaking.report'), MatchmakingAction.report),
       ],
     ]),
-  );
+  });
 };
 
 matchmakingScene.enter(async context => {

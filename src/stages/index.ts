@@ -4,6 +4,7 @@ import { IContext } from '../types';
 
 import { adminScene } from './admin';
 import { matchmakingScene } from './matchmaking';
+import { MediaScene } from './media';
 import { profileScene, changeAgeScene, changeVideoScene } from './profile';
 import { welcomeScene } from './welcome';
 
@@ -14,4 +15,5 @@ export const stage = new Scenes.Stage<IContext>([
   changeAgeScene,
   changeVideoScene,
   adminScene,
+  MediaScene,
 ]);
