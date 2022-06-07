@@ -98,7 +98,7 @@ matchmakingScene.action(MatchmakingAction.like, async context => {
     markLikeAsMutual(id),
     context.replyWithHTML(
       i18n.t(`matchmaking.match_${liker.gender.toLocaleLowerCase()}`, {
-        username: liker.username || liker.telegramId,
+        username: liker.username || `id${liker.telegramId}`,
       }),
       Markup.inlineKeyboard([
         Markup.button.callback(i18n.t('matchmaking.return_to_profile'), MatchmakingAction.returnToProfile),
