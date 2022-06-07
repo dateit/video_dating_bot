@@ -94,17 +94,31 @@ matchmakingScene.action(MatchmakingAction.like, async context => {
 
   const { liker, id } = like;
 
-  await Promise.all([
-    markLikeAsMutual(id),
-    context.replyWithHTML(
-      i18n.t(`matchmaking.match_${liker.gender.toLocaleLowerCase()}`, {
-        username: liker.username || `id${liker.telegramId}`,
-      }),
-      Markup.inlineKeyboard([
-        Markup.button.callback(i18n.t('matchmaking.return_to_profile'), MatchmakingAction.returnToProfile),
-      ]),
-    ),
-  ]);
+  if (!liker.username) {
+    await Promise.all([
+      markLikeAsMutual(id),
+      context.replyWithMarkdownV2(
+        i18n.t(`matchmaking.id_match_${liker.gender.toLocaleLowerCase()}`, {
+          telegramId: liker.telegramId,
+        }),
+        Markup.inlineKeyboard([
+          Markup.button.callback(i18n.t('matchmaking.return_to_profile'), MatchmakingAction.returnToProfile),
+        ]),
+      ),
+    ]);
+  } else {
+    await Promise.all([
+      markLikeAsMutual(id),
+      context.replyWithHTML(
+        i18n.t(`matchmaking.match_${liker.gender.toLocaleLowerCase()}`, {
+          username: liker.username,
+        }),
+        Markup.inlineKeyboard([
+          Markup.button.callback(i18n.t('matchmaking.return_to_profile'), MatchmakingAction.returnToProfile),
+        ]),
+      ),
+    ]);
+  }
 });
 
 matchmakingScene.action(MatchmakingAction.dislike, async context => {
