@@ -25,6 +25,8 @@ export const userHandler = async (context: IContext) => {
 
   if (user.videoNoteId) {
     await context.replyWithVideoNote(user.videoNoteId);
+  } else {
+    await context.reply(i18n.t('admin.no_video_note'));
   }
 
   await context.replyWithMarkdownV2(
