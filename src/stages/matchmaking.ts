@@ -76,7 +76,7 @@ matchmakingScene.enter(async context => {
 });
 
 matchmakingScene.action(MatchmakingAction.like, async context => {
-  const { user, scene, i18n } = context;
+  const { user, scene, i18n, telegram } = context;
 
   await context.clearUpKeyboard();
 
@@ -94,19 +94,29 @@ matchmakingScene.action(MatchmakingAction.like, async context => {
 
   const { liker, id } = like;
 
-  const gender = liker.gender.toLocaleLowerCase();
-  const message = Boolean(liker.username)
-    ? i18n.t(`matchmaking.match_${gender}`, {
+  const genderLiker = liker.gender.toLocaleLowerCase();
+  const messageLiker = Boolean(liker.username)
+    ? i18n.t(`matchmaking.match_${genderLiker}`, {
         username: liker.username,
       })
-    : i18n.t(`matchmaking.id_match_${gender}`, {
+    : i18n.t(`matchmaking.id_match_${genderLiker}`, {
         telegramId: liker.telegramId,
+      });
+
+  const genderLiked = user.gender.toLocaleLowerCase();
+  const messageLiked = Boolean(user.username)
+    ? i18n.t(`matchmaking.match_${genderLiked}`, {
+        username: user.username,
+      })
+    : i18n.t(`matchmaking.id_match_${genderLiked}`, {
+        telegramId: user.telegramId,
       });
 
   await Promise.all([
     markLikeAsMutual(id),
+    telegram.sendMessage(liker.telegramChatId, messageLiked, { parse_mode: 'HTML' }),
     context.replyWithHTML(
-      message,
+      messageLiker,
       Markup.inlineKeyboard([
         Markup.button.callback(i18n.t('matchmaking.return_to_profile'), MatchmakingAction.returnToProfile),
       ]),
