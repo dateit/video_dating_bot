@@ -118,6 +118,13 @@ model Report {
   @@index([reportedId])
 }
 
+model WelcomeQuestions {
+  id       Int    @id @default(autoincrement())
+  question String
+
+  createdAt DateTime @default(now())
+}
+
 model Session {
   id   String @id @default(uuid())
   data String

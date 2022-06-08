@@ -4,6 +4,7 @@ import { Gender, Role } from '@prisma/client';
 import { ageValidator, getUser, updateUser } from '../services/user';
 import { IContext } from '../types';
 import { findMediaByType, findOneMediaByType } from '../services/media';
+import { getRandomQuestions } from '../services/questions';
 
 import { Scene } from './scenes';
 
@@ -14,6 +15,7 @@ const enum GenderAction {
 
 const enum MainAction {
   continue = 'continue',
+  questions = 'questions',
 }
 
 const buildLookingForKeyboard = (context: IContext) => {
@@ -67,10 +69,25 @@ videoNoteHandler.action(MainAction.continue, async context => {
   await Promise.all([
     context.clearUpKeyboard(),
     context.replyWithVideo(video.telegramMediaId, {
+      ...Markup.inlineKeyboard([Markup.button.callback(i18n.t('welcome.help_me'), MainAction.questions)]),
       caption: i18n.t('welcome.attach_video_note'),
       parse_mode: 'HTML',
     }),
   ]);
+});
+
+videoNoteHandler.action(MainAction.questions, async context => {
+  const { i18n } = context;
+
+  const text = i18n.t('welcome.questions');
+
+  const questions = await getRandomQuestions(5, 7);
+
+  const questionsText = questions.map(({ question }, index) => `${index + 1}. ${question}`).join('\n');
+
+  await context.clearUpKeyboard();
+
+  await context.replyWithHTML(`${text}\n\n${questionsText}`);
 });
 
 videoNoteHandler.on('video_note', async context => {
