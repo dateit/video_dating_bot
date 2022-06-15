@@ -41,11 +41,15 @@ const configApp = async (app: FastifyInstance, bot: TelegrafInstance) => {
 };
 
 const configBot = async (app: FastifyInstance, bot: TelegrafInstance): Promise<void> => {
-  await bot.telegram.deleteWebhook({ drop_pending_updates: true }).catch(() => {
-    app.log.info('Webhook was not set');
-  });
-
   const secretPath = `${botConfig.domain}${botConfig.webhookPath}`;
+
+  const webHookInfo = await bot.telegram.getWebhookInfo();
+  if (webHookInfo.url !== secretPath) {
+    await bot.telegram.deleteWebhook({ drop_pending_updates: true }).catch(() => {
+      app.log.info('Webhook was not set');
+    });
+  }
+
   await bot.telegram.setWebhook(secretPath);
 
   bot.catch(error => {

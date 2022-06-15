@@ -111,7 +111,7 @@ videoNoteHandler.on('video_note', async context => {
   return wizard.next();
 });
 
-videoNoteHandler.on('message', async context => {
+videoNoteHandler.on(['text', 'audio', 'contact', 'location', 'video'], async context => {
   await context.replyWithLocalization('errors.video');
 });
 

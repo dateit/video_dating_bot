@@ -8,13 +8,19 @@ import { userHandler } from './user';
 import { removeVideoHandler } from './remove-video';
 import { mediaHandler } from './media';
 
+const commands = {
+  profile: profileHandler,
+  admin: adminHandler,
+  user: userHandler,
+  removeVideo: removeVideoHandler,
+  media: mediaHandler,
+  help: helpHandler,
+} as const;
+
 export const registerHandlers = (bot: TelegrafInstance) => {
   bot.start(startHandler);
 
-  bot.command('profile', profileHandler);
-  bot.command('admin', adminHandler);
-  bot.command('user', userHandler);
-  bot.command('help', helpHandler);
-  bot.command('removeVideo', removeVideoHandler);
-  bot.command('media', mediaHandler);
+  for (const [command, handler] of Object.entries(commands)) {
+    bot.command(command, handler);
+  }
 };
